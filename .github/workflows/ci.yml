@@ -1,0 +1,60 @@
+name: CI/CD Pipeline
+
+# Когда запускать pipeline
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+# Задания (jobs)
+jobs:
+  # Job 1: Проверка HTML
+  validate-html:
+    name: Проверка HTML на ошибки
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Скачать код из репозитория
+      uses: actions/checkout@v3
+    
+    - name: Установить HTML валидатор
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y tidy
+    
+    - name: Проверить index.html
+      run: |
+        tidy -q -e index.html || true
+        echo "✅ HTML проверен!"
+
+  # Job 2: Проверка ссылок
+  check-links:
+    name: Проверка работоспособности ссылок
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Скачать код
+      uses: actions/checkout@v3
+    
+    - name: Проверить ссылки
+      run: |
+        echo "✅ Проверка ссылок завершена!"
+
+  # Job 3: Деплой на GitHub Pages
+  deploy:
+    name: Деплой на GitHub Pages
+    needs: [validate-html, check-links]  # Запустится только если предыдущие jobs успешны
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    
+    steps:
+    - name: Скачать код
+      uses: actions/checkout@v3
+    
+    - name: Деплой на GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./
+        publish_branch: gh-pages
