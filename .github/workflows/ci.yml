@@ -68,6 +68,23 @@ jobs:
     needs: [validate-html, check-links, validate-css ]  # Запустится только если предыдущие jobs успешны
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+  # Job: Тест на разных системах
+  cross-platform-test:
+    name: Тест на ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    
+    steps:
+    - name: Скачать код
+      uses: actions/checkout@v3
+    
+    - name: Проверить файлы
+      run: |
+        ls -la
+        echo "✅ Тест на ${{ matrix.os }} завершен!"
     
     steps:
     - name: Скачать код
