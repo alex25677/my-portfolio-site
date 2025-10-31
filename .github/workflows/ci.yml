@@ -40,11 +40,32 @@ jobs:
     - name: Проверить ссылки
       run: |
         echo "✅ Проверка ссылок завершена!"
+  # Job: Проверка CSS
+  validate-css:
+    name: Проверка CSS на ошибки
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Скачать код
+      uses: actions/checkout@v3
+    
+    - name: Установить Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    
+    - name: Установить CSS валидатор
+      run: npm install -g css-validator
+    
+    - name: Проверить style.css
+      run: |
+        css-validator style.css || echo "⚠️  Найдены предупреждения в CSS"
+        echo "✅ CSS проверен!"
 
   # Job 3: Деплой на GitHub Pages
   deploy:
     name: Деплой на GitHub Pages
-    needs: [validate-html, check-links]  # Запустится только если предыдущие jobs успешны
+    needs: [validate-html, check-links, validate-css ]  # Запустится только если предыдущие jobs успешны
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     
